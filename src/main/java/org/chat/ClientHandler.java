@@ -47,6 +47,7 @@ class ClientHandler implements Runnable, Log {
             this.dos = dos;
             this.dis = dis;
             String received;
+            helpCommand("/help");
             while (true) {
                 try {
                     // receive the string
@@ -54,6 +55,7 @@ class ClientHandler implements Runnable, Log {
                     log(received);
                     if (logoutCommand(received)) break;
                     if (listCommand(received)) continue;
+                    if (helpCommand(received)) continue;
 
                     StringTokenizer commands = new StringTokenizer(received, DELIM_COMMAND);
                     if (commands.countTokens() > 1) {
@@ -128,7 +130,7 @@ class ClientHandler implements Runnable, Log {
             sbl.append("Online " + clients.size()+ " users \n");
             for (Map.Entry<String, ClientHandler> entry : clients.entrySet()) {
                 ClientHandler user = entry.getValue();
-                sbl.append(user.getName() + '\n');
+                sbl.append(user.getName() + ", ");
                 //System.out.println(entry.getKey() + ":" + entry.getValue());
             }
             try {
@@ -149,4 +151,20 @@ class ClientHandler implements Runnable, Log {
         }
         return false;
     }
+
+    private boolean helpCommand(String received) {
+        if (received.equals("/help")) {
+            StringBuilder sbl = new StringBuilder();
+            sbl.append("Wellcome to free chat!\n");
+            sbl.append("Available commands: /help, /list, /logout, /setname [newname], userName@message");
+            try {
+                dos.writeUTF(sbl.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+        return false;
+    }
+
 }
