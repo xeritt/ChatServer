@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 
 // ClientHandler class
 class ClientHandler implements Runnable, Log {
+    public static final String DELIM = "@";
     private Scanner scn = new Scanner(System.in);
     private String name;
     private DataInputStream dis;
@@ -51,10 +52,13 @@ class ClientHandler implements Runnable, Log {
                     received = dis.readUTF();
                     log(received);
                     if (logoutCommand(received)) break;
+                    if (listCommand(received)) continue;
                     // break the string into message and recipient part
-                    StringTokenizer st = new StringTokenizer(received, "#");
-                    String MsgToSend = st.nextToken();
-                    String recipient = st.nextToken();
+                    StringTokenizer st = new StringTokenizer(received, DELIM);
+                    String recipient;
+                    String MsgToSend;
+                    recipient = st.nextToken();
+                    MsgToSend = st.nextToken();
 
                     if (setNameCommand(MsgToSend, recipient)) continue;
 
@@ -87,20 +91,48 @@ class ClientHandler implements Runnable, Log {
     private boolean setNameCommand(String MsgToSend, String recipient) {
         if (MsgToSend.equals("/setname")) {
             String oldName = name;
-            name = recipient;
+
             Map<String, ClientHandler> clients = chatServer.getClientHandlers();
             synchronized(clients){
-                clients.remove(this);
-                clients.put(name, this);
+                clients.remove(oldName, this);
+                name = recipient;
+                clients.put(recipient, this);
             }
-            log("Client " + oldName + " change name to " + getName());
+
+            String msg = "User " + oldName + " change name to " + getName();
+            log(msg);
+            try {
+                dos.writeUTF(msg);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean listCommand(String received) {
+        if (received.equals("/list")) {
+            Map<String, ClientHandler> clients = chatServer.getClientHandlers();
+            StringBuilder sbl = new StringBuilder();
+            sbl.append("Online " + clients.size()+ " users \n");
+            for (Map.Entry<String, ClientHandler> entry : clients.entrySet()) {
+                ClientHandler user = entry.getValue();
+                sbl.append(user.getName() + '\n');
+                //System.out.println(entry.getKey() + ":" + entry.getValue());
+            }
+            try {
+                dos.writeUTF(sbl.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             return true;
         }
         return false;
     }
 
     private boolean logoutCommand(String received) throws IOException {
-        if (received.equals("logout")) {
+        if (received.equals("/logout")) {
             isloggedin = false;
             socket.close();
             return true;
