@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 // ClientHandler class
 class ClientHandler implements Runnable, Log {
     public static final String DELIM = "@";
+    private static final String DELIM_COMMAND = " ";
     private Scanner scn = new Scanner(System.in);
     private String name;
     private DataInputStream dis;
@@ -53,6 +54,15 @@ class ClientHandler implements Runnable, Log {
                     log(received);
                     if (logoutCommand(received)) break;
                     if (listCommand(received)) continue;
+
+                    StringTokenizer commands = new StringTokenizer(received, DELIM_COMMAND);
+                    if (commands.countTokens() > 1) {
+                        String command = commands.nextToken();
+                        String arg1 = commands.nextToken();
+                        if (setNameCommand(command, arg1)) continue;
+                    }
+
+
                     // break the string into message and recipient part
                     StringTokenizer st = new StringTokenizer(received, DELIM);
                     String recipient;
@@ -60,7 +70,7 @@ class ClientHandler implements Runnable, Log {
                     recipient = st.nextToken();
                     MsgToSend = st.nextToken();
 
-                    if (setNameCommand(MsgToSend, recipient)) continue;
+                    //if (setNameCommand(MsgToSend, recipient)) continue;
 
                     // search for the recipient in the connected devices list.
                     // ar is the vector storing client of active users
@@ -88,15 +98,15 @@ class ClientHandler implements Runnable, Log {
 
     }
 
-    private boolean setNameCommand(String MsgToSend, String recipient) {
-        if (MsgToSend.equals("/setname")) {
+    private boolean setNameCommand(String command, String newName) {
+        if (command.equals("/setname")) {
             String oldName = name;
 
             Map<String, ClientHandler> clients = chatServer.getClientHandlers();
             synchronized(clients){
                 clients.remove(oldName, this);
-                name = recipient;
-                clients.put(recipient, this);
+                name = newName;
+                clients.put(newName, this);
             }
 
             String msg = "User " + oldName + " change name to " + getName();
