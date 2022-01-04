@@ -153,6 +153,10 @@ class ClientHandler implements Runnable, Log {
         if (received.equals("/logout")) {
             isloggedin = false;
             socket.close();
+            Map<String, ClientHandler> clients = chatServer.getClientHandlers();
+            synchronized(clients) {
+                clients.remove(name, this);
+            }
             return true;
         }
         return false;
@@ -161,7 +165,7 @@ class ClientHandler implements Runnable, Log {
     private boolean helpCommand(String received) {
         if (received.equals("/help")) {
             StringBuilder sbl = new StringBuilder();
-            sbl.append("Wellcome to free chat!\n");
+            sbl.append("Wellcome " + name+ " to free chat!\n");
             sbl.append("Available commands: /help, /list, /logout, /setname [newname], userName@message");
             try {
                 dos.writeUTF(sbl.toString());
