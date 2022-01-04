@@ -88,7 +88,7 @@ class ClientHandler implements Runnable, Log {
                     e.printStackTrace();
                     isloggedin = false;
                     socket.close();
-                    chatServer.getClientHandlers().remove(this);
+                    chatServer.getClientHandlers().remove(getName(), this);
                     log("Client: " + getName() + " disconected.");
                     break;
                 }
