@@ -56,33 +56,11 @@ class ClientHandler implements Runnable, Log {
                     if (logoutCommand(received)) break;
                     if (listCommand(received)) continue;
                     if (helpCommand(received)) continue;
-
-                    StringTokenizer commands = new StringTokenizer(received, DELIM_COMMAND);
-                    if (commands.countTokens() > 1) {
-                        String command = commands.nextToken();
-                        String arg1 = commands.nextToken();
-                        if (setNameCommand(command, arg1)) continue;
-                    }
-
-
+                    if (setNameCommand(received)) continue;
                     // break the string into message and recipient part
-                    StringTokenizer st = new StringTokenizer(received, DELIM);
-                    String recipient;
-                    String MsgToSend;
-                    recipient = st.nextToken();
-                    MsgToSend = st.nextToken();
+                    if (sendPrivateCommand(received)) continue;
 
-                    //if (setNameCommand(MsgToSend, recipient)) continue;
-
-                    // search for the recipient in the connected devices list.
-                    // ar is the vector storing client of active users
-                    ClientHandler clientHandler = chatServer.getClientHandlers().get(recipient);
-                    if (clientHandler == null) continue;
-                    if (clientHandler.isloggedin == false) continue;
-
-                    clientHandler.dos.writeUTF(this.name + " : " + MsgToSend);
-
-               } catch (NoSuchElementException e){
+                } catch (NoSuchElementException e){
                     log("Error input!");
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -100,7 +78,35 @@ class ClientHandler implements Runnable, Log {
 
     }
 
-    private boolean setNameCommand(String command, String newName) {
+    private boolean sendPrivateCommand(String received) throws IOException {
+        StringTokenizer st = new StringTokenizer(received, DELIM);
+        if (st.countTokens() < 2) return false;
+        String recipient;
+        String MsgToSend;
+        recipient = st.nextToken();
+        MsgToSend = st.nextToken();
+
+        //if (setNameCommand(MsgToSend, recipient)) continue;
+
+        // search for the recipient in the connected devices list.
+        // ar is the vector storing client of active users
+        ClientHandler clientHandler = chatServer.getClientHandlers().get(recipient);
+        if (clientHandler == null) return true;
+        if (clientHandler.isloggedin == false) return true;
+
+        clientHandler.dos.writeUTF(this.name + " : " + MsgToSend);
+        return false;
+    }
+
+    private boolean setNameCommand(String received) {
+
+        StringTokenizer commands = new StringTokenizer(received, DELIM_COMMAND);
+        if (commands.countTokens() < 2) return false;
+            String command = commands.nextToken();
+            String newName = commands.nextToken();
+            //if (setNameCommand(command, arg1)) continue;
+
+
         if (command.equals("/setname")) {
             String oldName = name;
 
