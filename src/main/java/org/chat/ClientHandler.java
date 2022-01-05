@@ -57,8 +57,10 @@ class ClientHandler implements Runnable, Log {
                     if (listCommand(received)) continue;
                     if (helpCommand(received)) continue;
                     if (setNameCommand(received)) continue;
+
                     // break the string into message and recipient part
                     if (sendPrivateCommand(received)) continue;
+                    if (sendAllCommand(received)) continue;
 
                 } catch (NoSuchElementException e){
                     log("Error input!");
@@ -94,7 +96,7 @@ class ClientHandler implements Runnable, Log {
         if (clientHandler == null) return true;
         if (clientHandler.isloggedin == false) return true;
 
-        clientHandler.dos.writeUTF(this.name + " : " + MsgToSend);
+        clientHandler.dos.writeUTF(this.name + ": " + MsgToSend);
         return false;
     }
 
@@ -127,6 +129,18 @@ class ClientHandler implements Runnable, Log {
             return true;
         }
         return false;
+    }
+    private boolean sendAllCommand(String received) throws IOException {
+        //if (!received.equals("/list")) return false;
+        Map<String, ClientHandler> clients = chatServer.getClientHandlers();
+        StringBuilder sbl = new StringBuilder();
+        sbl.append("Online " + clients.size()+ " users \n");
+        for (Map.Entry<String, ClientHandler> entry : clients.entrySet()) {
+            ClientHandler clientHandler = entry.getValue();
+            if (clientHandler != this)
+                clientHandler.dos.writeUTF(clientHandler.getName() + ": " + received);
+        }
+        return true;
     }
 
     private boolean listCommand(String received) {
