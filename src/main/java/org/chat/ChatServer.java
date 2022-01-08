@@ -8,12 +8,17 @@ import java.net.*;
 public class ChatServer implements Log {
     // Vector to store active clients
     private Map<String, ClientHandler> clientHandlers = new HashMap<>();
+    private Map<String, String> ipNames = new HashMap<>();
     // counter for clients
     static int i = 0;
     private int port = 1234;
 
     public Map<String, ClientHandler> getClientHandlers() {
         return clientHandlers;
+    }
+
+    public Map<String, String> getIpNames() {
+        return ipNames;
     }
 
     public void start(String[] args) throws IOException {
@@ -31,11 +36,19 @@ public class ChatServer implements Log {
             log("Creating a new handler for this client...");
             // Create a new handler object for handling this request.
             //ClientHandler clientHandler = new ClientHandler(clientSocket, "client " + i, dis, dos);
-            ClientHandler clientHandler = new ClientHandler(this, clientSocket, "user" + i);
+            String ip = clientSocket.getInetAddress().getHostAddress();
+            String newName = "user" + i;
+            if (ipNames.containsKey(ip)){
+                newName = ipNames.get(ip);
+            } else {
+                ipNames.put(clientSocket.getInetAddress().getHostAddress(), newName);
+            }
+            ClientHandler clientHandler = new ClientHandler(this, clientSocket, newName);
             // Create a new Thread with this object.
             Thread client = new Thread(clientHandler);
             log("Adding " + clientHandler.getName() + " client to active client list");
             // add this client to active clients list
+            System.out.println();
             clientHandlers.put(clientHandler.getName(), clientHandler);
             // start the thread.
             client.start();

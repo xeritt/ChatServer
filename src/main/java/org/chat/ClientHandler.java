@@ -15,6 +15,7 @@ class ClientHandler implements Runnable, Log {
     private static final String DELIM_COMMAND = " ";
     private Scanner scn = new Scanner(System.in);
     private String name;
+    private String ip;
     private DataInputStream dis;
     private DataOutputStream dos;
     private Socket socket;
@@ -119,6 +120,9 @@ class ClientHandler implements Runnable, Log {
                 clients.put(newName, this);
             }
 
+            Map<String, String> ipNames = chatServer.getIpNames();
+            String ip = socket.getInetAddress().getHostAddress();
+            ipNames.replace(ip, oldName, newName);
             String msg = "User " + oldName + " change name to " + getName();
             log(msg);
             try {
