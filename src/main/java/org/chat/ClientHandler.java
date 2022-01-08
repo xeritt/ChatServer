@@ -138,7 +138,7 @@ class ClientHandler implements Runnable, Log {
         for (Map.Entry<String, ClientHandler> entry : clients.entrySet()) {
             ClientHandler clientHandler = entry.getValue();
             if (clientHandler != this)
-                clientHandler.dos.writeUTF(clientHandler.getName() + ": " + received);
+                clientHandler.dos.writeUTF(getName() + ": " + received);
         }
         return true;
     }
