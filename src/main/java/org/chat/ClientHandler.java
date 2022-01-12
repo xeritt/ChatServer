@@ -49,7 +49,7 @@ class ClientHandler implements Runnable, Log {
             this.dis = dis;
             String received;
             helpCommand("/help");
-            sendAllCommand("user has joined the chat.");
+            sendAllCommand("has joined the chat.");
             while (true) {
                 try {
                     // receive the string
