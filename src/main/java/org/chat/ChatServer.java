@@ -29,6 +29,7 @@ public class ChatServer implements Log {
         ServerSocket ss = new ServerSocket(port);
         // running infinite loop for getting
         // client request
+
         while (true) {
             // Accept the incoming request
             Socket clientSocket = ss.accept();
@@ -45,12 +46,13 @@ public class ChatServer implements Log {
             }
             ClientHandler clientHandler = new ClientHandler(this, clientSocket, newName);
             // Create a new Thread with this object.
-            Thread client = new Thread(clientHandler);
+
             log("Adding " + clientHandler.getName() + " client to active client list");
             // add this client to active clients list
             System.out.println();
             clientHandlers.put(clientHandler.getName(), clientHandler);
             // start the thread.
+            Thread client = new Thread(clientHandler);
             client.start();
             i++;
 

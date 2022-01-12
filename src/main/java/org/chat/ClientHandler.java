@@ -49,6 +49,7 @@ class ClientHandler implements Runnable, Log {
             this.dis = dis;
             String received;
             helpCommand("/help");
+            sendAllCommand("user has joined the chat.");
             while (true) {
                 try {
                     // receive the string
@@ -134,7 +135,8 @@ class ClientHandler implements Runnable, Log {
         }
         return false;
     }
-    private boolean sendAllCommand(String received) throws IOException {
+
+    private boolean sendAllCommand(String text) throws IOException {
         //if (!received.equals("/list")) return false;
         Map<String, ClientHandler> clients = chatServer.getClientHandlers();
         StringBuilder sbl = new StringBuilder();
@@ -142,7 +144,7 @@ class ClientHandler implements Runnable, Log {
         for (Map.Entry<String, ClientHandler> entry : clients.entrySet()) {
             ClientHandler clientHandler = entry.getValue();
             if (clientHandler != this)
-                clientHandler.dos.writeUTF(getName() + ": " + received);
+                clientHandler.dos.writeUTF(getName() + ": " + text);
         }
         return true;
     }
