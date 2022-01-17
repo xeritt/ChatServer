@@ -1,9 +1,13 @@
 package org.chat;
 
+import org.chat.security.RSAUtil;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -13,14 +17,18 @@ import java.util.StringTokenizer;
 class ClientHandler implements Runnable, Log {
     public static final String DELIM = "@";
     private static final String DELIM_COMMAND = " ";
-    private Scanner scn = new Scanner(System.in);
+    //private Scanner scn = new Scanner(System.in);
     private String name;
-    private String ip;
+    //private String ip;
     private DataInputStream dis;
     private DataOutputStream dos;
     private Socket socket;
     private boolean isloggedin;
     private ChatServer chatServer;
+
+    private boolean encrypt = false;
+    private KeyPair writeKeys;
+    private PublicKey readKey;
 
     public String getName() {
         return name;
@@ -55,9 +63,14 @@ class ClientHandler implements Runnable, Log {
                     // receive the string
                     received = dis.readUTF();
                     log(received);
+                    if (encrypt){
+                        received = RSAUtil.decrypt(received, this.writeKeys.getPrivate());
+                    }
+                    log(received);
                     if (logoutCommand(received)) break;
                     if (listCommand(received)) continue;
                     if (helpCommand(received)) continue;
+                    if (keyCommand(received)) continue;
                     if (setNameCommand(received)) continue;
 
                     // break the string into message and recipient part
@@ -73,6 +86,9 @@ class ClientHandler implements Runnable, Log {
                     chatServer.getClientHandlers().remove(getName(), this);
                     log("Client: " + getName() + " disconected.");
                     break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    log("Encrypt error.");
                 }
 
             }
@@ -80,6 +96,41 @@ class ClientHandler implements Runnable, Log {
             e.printStackTrace();
         }
 
+    }
+
+    private boolean keyCommand(String received) {
+        if (!received.equals("/key")) return false;
+        try {
+            String keyEncode = dis.readUTF();
+            this.readKey = RSAUtil.getPublicKey(keyEncode);
+
+            this.writeKeys = RSAUtil.generateKeyPair();
+            dos.writeUTF("/key");
+            String publicKey = RSAUtil.convertPublicKeyToString(writeKeys.getPublic());
+            dos.writeUTF(publicKey);
+            this.encrypt = true;
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private void send(String msg){
+        if (encrypt){
+            try {
+                msg = RSAUtil.encrypt(msg , readKey);
+            } catch (Exception e) {
+                e.printStackTrace();
+                log("Error encrypt");
+            }
+        }
+        try {
+            dos.writeUTF(msg);
+        } catch (IOException e) {
+            e.printStackTrace();
+            log("Error write");
+        }
     }
 
     private boolean sendPrivateCommand(String received) throws IOException {
@@ -98,7 +149,7 @@ class ClientHandler implements Runnable, Log {
         if (clientHandler == null) return true;
         if (clientHandler.isloggedin == false) return true;
 
-        clientHandler.dos.writeUTF(this.name + ": " + MsgToSend);
+        clientHandler.send(this.name + ": " + MsgToSend);
         return false;
     }
 
@@ -126,11 +177,7 @@ class ClientHandler implements Runnable, Log {
             ipNames.replace(ip, oldName, newName);
             String msg = "User " + oldName + " change name to " + getName();
             log(msg);
-            try {
-                dos.writeUTF(msg);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            send(msg);
             return true;
         }
         return false;
@@ -144,7 +191,7 @@ class ClientHandler implements Runnable, Log {
         for (Map.Entry<String, ClientHandler> entry : clients.entrySet()) {
             ClientHandler clientHandler = entry.getValue();
             if (clientHandler != this)
-                clientHandler.dos.writeUTF(getName() + ": " + text);
+                clientHandler.send(getName() + ": " + text);
         }
         return true;
     }
@@ -159,11 +206,7 @@ class ClientHandler implements Runnable, Log {
                 sbl.append(user.getName() + ", ");
                 //System.out.println(entry.getKey() + ":" + entry.getValue());
             }
-            try {
-                dos.writeUTF(sbl.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            send(sbl.toString());
             return true;
         }
         return false;
@@ -187,11 +230,7 @@ class ClientHandler implements Runnable, Log {
             StringBuilder sbl = new StringBuilder();
             sbl.append("Wellcome " + name+ " to free chat!\n");
             sbl.append("Available commands: /help, /list, /logout, /setname [newname], userName@message");
-            try {
-                dos.writeUTF(sbl.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            send(sbl.toString());
             return true;
         }
         return false;
