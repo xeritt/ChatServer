@@ -1,10 +1,13 @@
 package org.chat.security;
 
 import javax.crypto.Cipher;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+//import javax.xml.bind.DatatypeConverter;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -80,5 +83,12 @@ public class RSAUtil {
         byte[] rawData = key.getEncoded();
         String encodedKey = Base64.getEncoder().encodeToString(rawData);
         return encodedKey;
+    }
+
+    public static String getMD5(String pass) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        md.update(pass.getBytes());
+        byte[] digest = md.digest();
+        return Base64.getEncoder().encodeToString(digest);
     }
 }

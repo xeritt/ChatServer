@@ -1,5 +1,7 @@
 package org.chat;
 
+import org.chat.security.User;
+
 import java.io.*;
 import java.util.*;
 import java.net.*;
@@ -9,6 +11,7 @@ public class ChatServer implements Log {
     // Vector to store active clients
     private Map<String, ClientHandler> clientHandlers = new HashMap<>();
     private Map<String, String> ipNames = new HashMap<>();
+    private Map<String, User> nameUsers = new HashMap<>();
     // counter for clients
     static int i = 0;
     private int port = 1234;
@@ -17,9 +20,8 @@ public class ChatServer implements Log {
         return clientHandlers;
     }
 
-    public Map<String, String> getIpNames() {
-        return ipNames;
-    }
+    public Map<String, String> getIpNames() {return ipNames;}
+    public Map<String, User> getNameUsers() {return nameUsers;}
 
     public void start(String[] args) throws IOException {
         // server is listening on port 1234
@@ -44,6 +46,7 @@ public class ChatServer implements Log {
             } else {
                 ipNames.put(clientSocket.getInetAddress().getHostAddress(), newName);
             }
+
             ClientHandler clientHandler = new ClientHandler(this, clientSocket, newName);
             // Create a new Thread with this object.
 
