@@ -1,5 +1,4 @@
-# ChatServer
-Multithreading RSA security chat
+# Chat desktop client (Windows, Linux)
 
 **Build**
 
@@ -8,6 +7,8 @@ mvn package
 **Running**
 
 java -jar ChatServer.jar [port]
+
+Folder /lib should be nearby in the same folder as the chat.jar itself.
 
 ---
 ## User commands
