@@ -80,7 +80,8 @@ class ClientHandler implements Runnable, Log {
             this.dos = dos;
             this.dis = dis;
             String received;
-            helpCommand("/help");
+            //helpCommand("/help");
+            loginMsg();
             sendAllCommand("has joined the chat.");
             while (true) {
                 try {
@@ -91,12 +92,12 @@ class ClientHandler implements Runnable, Log {
                         received = RSAUtil.decrypt(received, this.writeKeys.getPrivate());
                     }
                     log(received);
+                    if (keyCommand(received)) continue;
                     if (authCommand(received)) continue;
                     if (checkUnLogin()) continue;
                     if (logoutCommand(received)) break;
                     if (listCommand(received)) continue;
                     if (helpCommand(received)) continue;
-                    if (keyCommand(received)) continue;
                     if (setNameCommand(received)) continue;
 
                     // break the string into message and recipient part
@@ -288,6 +289,7 @@ class ClientHandler implements Runnable, Log {
         setNameCommand(SETNAME + userName);
         nameUsers.put(userName, user);
         String reg = "[ " + userName + " ] " + REGISTERED;
+        chatServer.saveUsers();
         send(reg);
         log(reg);
         return true;
@@ -334,6 +336,7 @@ class ClientHandler implements Runnable, Log {
                     setNameCommand(SETNAME + userName);
                 }
                 setUser(user);
+                helpCommand("/help");
                 log(LOGIN_SUCCESS);
             } else {
                 send(BAD_PASSWORD);
@@ -357,6 +360,14 @@ class ClientHandler implements Runnable, Log {
             return true;
         }
         return false;
+    }
+
+    private void loginMsg() {
+            StringBuilder sbl = new StringBuilder();
+            sbl.append("Wellcome " + name+ " to free chat!\n");
+            sbl.append("Available commands: /register [userName] [userPass], /login [userName] [userPass]\n");
+            sbl.append("Please login or register.");
+            send(sbl.toString());
     }
 
 }

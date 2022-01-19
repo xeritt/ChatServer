@@ -1,6 +1,7 @@
 package org.chat;
 
 import org.chat.security.User;
+import org.chat.security.UserService;
 
 import java.io.*;
 import java.util.*;
@@ -8,6 +9,7 @@ import java.net.*;
 
 // Server class
 public class ChatServer implements Log {
+    public static final String USERS_SER = "users.ser";
     // Vector to store active clients
     private Map<String, ClientHandler> clientHandlers = new HashMap<>();
     private Map<String, String> ipNames = new HashMap<>();
@@ -31,6 +33,7 @@ public class ChatServer implements Log {
         ServerSocket ss = new ServerSocket(port);
         // running infinite loop for getting
         // client request
+        loadUsers();
 
         while (true) {
             // Accept the incoming request
@@ -60,6 +63,19 @@ public class ChatServer implements Log {
             i++;
 
         }
+
+    }
+
+    public void loadUsers() {
+        File usersFile = new File(USERS_SER);
+        if (usersFile.isFile()){
+            nameUsers = UserService.loadUsers(usersFile);
+        }
+    }
+
+    public void saveUsers() {
+        File usersFile = new File(USERS_SER);
+        UserService.saveUsers(usersFile, nameUsers);
 
     }
 
