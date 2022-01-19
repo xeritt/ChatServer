@@ -38,8 +38,9 @@ public class ChatServer implements Log {
         while (true) {
             // Accept the incoming request
             Socket clientSocket = ss.accept();
-            log("New client request received : " + clientSocket);
-            log("Creating a new handler for this client...");
+            //log("New client request received : " + clientSocket);
+            //log("Creating a new handler for this client...");
+
             // Create a new handler object for handling this request.
             //ClientHandler clientHandler = new ClientHandler(clientSocket, "client " + i, dis, dos);
             String ip = clientSocket.getInetAddress().getHostAddress();
@@ -53,7 +54,7 @@ public class ChatServer implements Log {
             ClientHandler clientHandler = new ClientHandler(this, clientSocket, newName);
             // Create a new Thread with this object.
 
-            log("Adding " + clientHandler.getName() + " client to active client list");
+            //log("Adding " + clientHandler.getName() + " client to active client list");
             // add this client to active clients list
             System.out.println();
             clientHandlers.put(clientHandler.getName(), clientHandler);

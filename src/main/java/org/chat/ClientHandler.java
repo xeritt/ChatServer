@@ -87,11 +87,11 @@ class ClientHandler implements Runnable, Log {
                 try {
                     // receive the string
                     received = dis.readUTF();
-                    log(received);
+                    //log(received);
                     if (encrypt){
                         received = RSAUtil.decrypt(received, this.writeKeys.getPrivate());
                     }
-                    log(received);
+                    //log(received);
                     if (keyCommand(received)) continue;
                     if (authCommand(received)) continue;
                     if (checkUnLogin()) continue;
